@@ -22,10 +22,12 @@ function Setting() {
     }
   };
   return (
-    <Button onClick={handleSignOut}>
-      <FaSignOutAlt />
-      Sign Out
-    </Button>
+    <section className="mt-14 md:mt-20">
+      <Button onClick={handleSignOut}>
+        <FaSignOutAlt />
+        Sign Out
+      </Button>
+    </section>
   );
 }
 

@@ -7,23 +7,23 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
+import { LayoutDashboard, Menu } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
 import {
   FaHome,
   FaInfoCircle,
   FaPhoneAlt,
-  FaPlusSquare,
   FaSignInAlt,
   FaUserPlus,
   FaCog,
+  FaCartArrowDown,
 } from "react-icons/fa";
 import { Input } from "../ui/input";
 import { DialogTitle } from "../ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { UserContext } from "@/Contexts/UserContext";
 import { supabase } from "@/supabaseClient";
-
+import LogoSvg from "@/LogoSvg";
+import { UserContext } from "@/Contexts/UserContext";
 export default function Header() {
   const [open, setOpen] = useState(false);
   const { user, setUser, userRole, setUserRole } = useContext(UserContext);
@@ -88,14 +88,23 @@ export default function Header() {
       { title: "Contact", path: "/contact", icon: FaPhoneAlt },
       { title: "Sign In", path: "/signin", icon: FaSignInAlt },
       { title: "Setting", path: "/setting", icon: FaCog },
+      { title: "Cart", path: "/cart", icon: FaCartArrowDown },
     ];
 
     if (!user) {
-      baseItems.push({ title: "Register", path: "/register", icon: FaUserPlus });
+      baseItems.push({
+        title: "Register",
+        path: "/register",
+        icon: FaUserPlus,
+      });
     }
 
     if (!loading && userRole === "admin") {
-      baseItems.push({ title: "Add Product", path: "/addproduct", icon: FaPlusSquare });
+      baseItems.push({
+        title: "Dashboard",
+        path: "/dashboard",
+        icon:LayoutDashboard,
+      });
     }
 
     return baseItems;
@@ -103,11 +112,9 @@ export default function Header() {
 
   return (
     <nav className="bg-white font-primary w-full flex items-center fixed top-0 left-0 z-50 md:h-20 h-14">
-      <div className="items-center px-4 flex justify-between w-screen mx-auto md:flex md:px-8 py-3 md:py-5">
+      <div className="items-center px-6 flex justify-between w-screen mx-auto md:flex md:px-6 py-3 md:py-5">
         <Link to="/">
-          <h1 className="text-2xl font-bold cursor-pointer text-green-500">
-            Logo
-          </h1>
+          <LogoSvg />
         </Link>
 
         {/* Search bar */}
@@ -159,7 +166,6 @@ export default function Header() {
             </nav>
           </SheetContent>
         </Sheet>
-
         {/* Desktop Menu */}
         <NavigationMenu className="hidden lg:block">
           <NavigationMenuList>

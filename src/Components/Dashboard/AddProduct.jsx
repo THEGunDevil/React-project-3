@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Label } from "./ui/label";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 import { supabase } from "@/supabaseClient";
 import { toast } from "react-toastify";
-import Spinner from "./Loader/Spinner";
+import Spinner from "../Loader/Spinner";
 
 export default function AddProduct() {
   const {
@@ -164,9 +164,12 @@ export default function AddProduct() {
   };
 
   return (
-    <section className="p-4 max-w-xl mx-auto mt-14 md:mt-20">
+    <section className="max-w-xl mx-auto ">
       <h2 className="text-2xl font-bold mb-4">Add Product</h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="md:space-y-7 space-y-4 "
+      >
         {/* Title */}
         <div className="space-y-2">
           <Label htmlFor="title">Title</Label>

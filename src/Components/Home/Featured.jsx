@@ -5,24 +5,23 @@ import { Autoplay } from "swiper/modules";
 import "swiper/css";
 import { Button } from "../ui/button";
 import { useNavigate } from "react-router-dom";
+import { useFetchPrdcts } from "@/hooks/useFetchPrdcts";
+import Fallback from "../Loader/Fallback";
 
 function Featured() {
   const navigate = useNavigate();
-  const { data, loading, error } = useAxios("https://dummyjson.com/products");
-  const filteredFeaturedProducts =
-    data?.products?.filter((p) => p.rating >= 4.5).slice(0, 3) || [];
+  const { products: filteredFeaturedProducts, isLoading, error } = useFetchPrdcts();
+  // const filteredFeaturedProducts =
+  //   data?.products?.filter((p) => p.rating >= 4.5).slice(0, 3) || [];
   localStorage.setItem(
     "featuredProducts",
     JSON.stringify(filteredFeaturedProducts)
   );
   const featuredProducts = JSON.parse(localStorage.getItem("featuredProducts"));
 
-  if (loading) {
-    return (
-      <p className="text-center mt-6 text-green-400">
-        Loading featured products...
-      </p>
-    );
+  if (isLoading) {
+    return <Fallback/>
+
   }
 
   if (error || featuredProducts.length === 0) {
@@ -34,7 +33,7 @@ function Featured() {
   }
 
   return (
-    <section className="w-screen mt-5 font-primary md:mt-10 px-4 md:px-20">
+    <section className="w-screen mt-5 font-primary md:mt-10 px-6 md:px-20">
       <h2 className="text-green-400 font-bold text-xl mb-3">Featured</h2>
       <Swiper
         spaceBetween={50}

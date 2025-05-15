@@ -3,12 +3,11 @@ import { Info } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button } from "../ui/button";
 import { toast } from "react-toastify";
-import { UserContext } from "@/Contexts/UserContext";
 import { supabase } from "@/supabaseClient";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import Spinner from "../Loader/Spinner";
-
+import { UserContext } from "@/Contexts/UserContext";
 function Register() {
   const {
     register,

@@ -8,15 +8,16 @@ import { UserProvider } from "./Contexts/UserContext";
 import SignIn from "./Components/Sign In/SignIn";
 import Register from "./Components/Register/Register";
 import Contact from "./Components/Contact/Contact";
-import AddProduct from "./Components/AddProduct";
 import { ToastContainer } from "react-toastify";
 import Fallback from "./Components/Loader/Fallback";
-
+import Dashboard from "./Components/Dashboard/Dashboard";
+import { CartProvider } from "./Contexts/CartContext";
 // Lazy-loaded components
 const Home = lazy(() => import("./Components/Home/Home"));
 const Profile = lazy(() => import("./Components/Profile/Profile"));
 const Product = lazy(() => import("./Components/Product"));
 const Setting = lazy(() => import("./Components/Setting/Setting"));
+const Cart = lazy(() => import("./Components/Cart"));
 
 const NotFound = () => (
   <div className="flex py-10 justify-center items-center">
@@ -36,7 +37,8 @@ const router = createBrowserRouter([
       { path: "/signin", element: <SignIn /> },
       { path: "/register", element: <Register /> },
       { path: "/contact", element: <Contact /> },
-      { path: "/addproduct", element: <AddProduct /> },
+      { path: "/cart", element: <Cart /> },
+      { path: "/dashboard", element: <Dashboard /> },
       { path: "*", element: <NotFound /> },
     ],
   },
@@ -45,10 +47,12 @@ const router = createBrowserRouter([
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <UserProvider>
-      <Suspense fallback={<Fallback />}>
-        <RouterProvider router={router} />
-      </Suspense>
-      <ToastContainer />
+      <CartProvider>
+        <Suspense fallback={<Fallback />}>
+          <RouterProvider router={router} />
+        </Suspense>
+        <ToastContainer />
+      </CartProvider>
     </UserProvider>
   </StrictMode>
 );

@@ -1,14 +1,14 @@
 import React, { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { toast } from "react-toastify";
 import { supabase } from "@/supabaseClient";
 import Spinner from "../Loader/Spinner";
+import { FaGithub, FaGoogle } from "react-icons/fa";
 import { UserContext } from "@/Contexts/UserContext";
-
 export default function SignIn() {
   const {
     register,
@@ -25,7 +25,8 @@ export default function SignIn() {
   const onSubmit = async ({ email, password }) => {
     setIsLoading(true);
     try {
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      const { data: authData, error: authError } =
+        await supabase.auth.signInWithPassword({ email, password });
       if (authError) {
         const msg = authError.message.includes("Invalid login credentials")
           ? "Invalid email or password."
@@ -58,19 +59,23 @@ export default function SignIn() {
       toast.success("Signed in successfully!", { position: "top-center" });
       navigate("/profile");
     } catch (err) {
-      toast.error(err.message || "Unexpected error.", { position: "bottom-center" });
+      toast.error(err.message || "Unexpected error.", {
+        position: "bottom-center",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <section className="flex justify-center py-16">
+    <section className="flex p-6 justify-center font-primary py-16 mt-14 md:mt-20 bg-green-200">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-md p-8 bg-white shadow-md rounded-lg space-y-6"
+        className="w-full md:max-w-md md:p-8 p-6 bg-white shadow-md rounded-lg space-y-6"
       >
-        <div>
+        <h1 className="text-center text-3xl font-bold text-primary">Sign In</h1>
+        <p className="text-center -mt-3">Welcome back!!</p>
+        <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
@@ -78,17 +83,23 @@ export default function SignIn() {
             placeholder="you@example.com"
             {...register("email", {
               required: "Email is required.",
-              pattern: { value: /^[^@\s]+@[^@\s]+\.[^@\s]+$/, message: "Enter a valid email." },
+              pattern: {
+                value: /^[^@\s]+@[^@\s]+\.[^@\s]+$/,
+                message: "Enter a valid email.",
+              },
               validate: {
-                notReserved: v => v !== "admin@example.com" || "This email is reserved.",
-                validDomain: v => !v.endsWith("baddomain.com") || "Domain not supported.",
+                notReserved: (v) =>
+                  v !== "admin@example.com" || "This email is reserved.",
+                validDomain: (v) =>
+                  !v.endsWith("baddomain.com") || "Domain not supported.",
               },
             })}
           />
-          {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+          {errors.email && (
+            <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+          )}
         </div>
-
-        <div>
+        <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
           <Input
             id="password"
@@ -96,13 +107,19 @@ export default function SignIn() {
             placeholder="Your password"
             {...register("password", { required: "Password is required." })}
           />
-          {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+          {errors.password && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.password.message}
+            </p>
+          )}
         </div>
-
+        <div className="">
+          <div></div>
+        </div>
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full flex justify-center items-center"
+          className="w-full flex justify-center items-center hover:bg-green-700 cursor-pointer"
         >
           {isLoading ? (
             <>
@@ -113,6 +130,32 @@ export default function SignIn() {
             "Sign In"
           )}
         </Button>
+        <div className="flex md:flex-row flex-col justify-between text-nowrap text-[13px] -mt-3">
+          <p>
+            <Link className="hover:text-blue-500 hover:underline">
+              Forgot password?
+            </Link>
+          </p>
+          <p>
+            Don't have an account?{" "}
+            <Link
+              className="hover:text-blue-500 hover:underline"
+              to={"/register"}
+            >
+              Register
+            </Link>
+          </p>
+        </div>
+        <div className="flex justify-between space-x-2 text-sm">
+          <div className="flex items-center gap-1 justify-center w-full shadow p-2 rounded-md hover:bg-gray-200 cursor-pointer">
+            <FaGoogle />
+            Google
+          </div>
+          <div className="flex items-center gap-1 justify-center w-full shadow p-2 rounded-md hover:bg-gray-200 cursor-pointer">
+            <FaGithub />
+            GitHub
+          </div>
+        </div>
       </form>
     </section>
   );

@@ -3,6 +3,8 @@ import { Button } from "../ui/button";
 import { FaAngleDown } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import Featured from "./Featured";
+import Products from "../Products/Products";
+
 function Home() {
   const navigate = useNavigate();
   return (
@@ -18,7 +20,7 @@ function Home() {
         <div className="flex flex-col justify-center items-center absolute left-1/2 top-30 md:top-50 -translate-1/2">
           <h1 className="text-3xl font-bold text-nowrap text-green-500">
             Charlotte Katakuri
-          </h1>{" "}
+          </h1>
           <p className="text-nowrap text-[13px] md:text-[15px] text-white">
             Lorem ipsum dolor sit amet consectetur, adipisicing elit.
           </p>
@@ -36,6 +38,7 @@ function Home() {
         </div>
       </section>
       <Featured />
+      <Products/>
     </>
   );
 }
