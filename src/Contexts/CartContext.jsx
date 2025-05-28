@@ -1,19 +1,38 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { toast } from "react-toastify";
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cartProducts, setCartProducts] = useState(() => {
-    const stored = localStorage.getItem("cartProducts");
-    return stored ? JSON.parse(stored) : [];
+    try {
+      const stored = localStorage.getItem("cartProducts");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return Array.isArray(parsed) ? parsed : [];
+      }
+      return [];
+    } catch (error) {
+      console.error("Failed to parse cartProducts from localStorage:", error);
+      localStorage.removeItem("cartProducts");
+      return [];
+    }
   });
+
   useEffect(() => {
     localStorage.setItem("cartProducts", JSON.stringify(cartProducts));
   }, [cartProducts]);
-  const addToCart = (product) => {
-    const exists = cartProducts.find((p) => p.id === product.id);
 
+  const addToCart = (product) => {
+    if (!product || !product.id) {
+      console.error("Invalid product:", product);
+      return;
+    }
+    if (!Array.isArray(cartProducts)) {
+      console.error("cartProducts is not an array:", cartProducts);
+      setCartProducts([{ ...product, quantity: 1 }]);
+      return;
+    }
+    const exists = cartProducts.find((p) => p.id === product.id);
     if (exists) {
       setCartProducts((prev) =>
         prev.map((p) =>
@@ -23,15 +42,13 @@ export const CartProvider = ({ children }) => {
     } else {
       setCartProducts((prev) => [...prev, { ...product, quantity: 1 }]);
     }
-    toast.success(`${product.title} added to cart`);
   };
 
   const removeFromCart = (id) => {
     setCartProducts((prev) => prev.filter((item) => item.id !== id));
-    localStorage.removeItem("cartProducts");
-    toast.info("Item removed from cart");
   };
-  const incrementQuantity = (id,e) => {
+
+  const incrementQuantity = (id, e) => {
     e.stopPropagation();
     setCartProducts((prev) =>
       prev.map((item) =>
@@ -40,7 +57,7 @@ export const CartProvider = ({ children }) => {
     );
   };
 
-  const decrementQuantity = (id,e) => {
+  const decrementQuantity = (id, e) => {
     e.stopPropagation();
     setCartProducts((prev) =>
       prev.map((item) =>
@@ -56,6 +73,7 @@ export const CartProvider = ({ children }) => {
       value={{
         cartProducts,
         addToCart,
+        setCartProducts,
         removeFromCart,
         incrementQuantity,
         decrementQuantity,

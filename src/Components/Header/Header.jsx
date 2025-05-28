@@ -86,24 +86,26 @@ export default function Header() {
       { title: "Home", path: "/", icon: FaHome },
       { title: "Profile", path: "/profile", icon: FaInfoCircle },
       { title: "Contact", path: "/contact", icon: FaPhoneAlt },
-      { title: "Sign In", path: "/signin", icon: FaSignInAlt },
       { title: "Setting", path: "/setting", icon: FaCog },
       { title: "Cart", path: "/cart", icon: FaCartArrowDown },
     ];
 
     if (!user) {
-      baseItems.push({
-        title: "Register",
-        path: "/register",
-        icon: FaUserPlus,
-      });
+      baseItems.push(
+        { title: "Sign In", path: "/signin", icon: FaSignInAlt },
+        {
+          title: "Register",
+          path: "/register",
+          icon: FaUserPlus,
+        }
+      );
     }
 
     if (!loading && userRole === "admin") {
       baseItems.push({
         title: "Dashboard",
         path: "/dashboard",
-        icon:LayoutDashboard,
+        icon: LayoutDashboard,
       });
     }
 
@@ -112,7 +114,7 @@ export default function Header() {
 
   return (
     <nav className="bg-white font-primary w-full flex items-center fixed top-0 left-0 z-50 md:h-20 h-14">
-      <div className="items-center px-6 flex justify-between w-screen mx-auto md:flex md:px-6 py-3 md:py-5">
+      <div className="items-center px-6 flex justify-between w-screen mx-auto md:flex py-3 md:py-5">
         <Link to="/">
           <LogoSvg />
         </Link>
@@ -158,7 +160,7 @@ export default function Header() {
                       }`
                     }
                   >
-                    <item.icon />
+                    <item.icon size={17} />
                     {item.title}
                   </NavLink>
                 ))
@@ -183,7 +185,7 @@ export default function Header() {
                     }
                   >
                     <div className="flex gap-1.5 items-center text-md">
-                      <item.icon />
+                      <item.icon size={17} />
                       {item.title}
                     </div>
                   </NavLink>

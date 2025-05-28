@@ -6,7 +6,6 @@ import { Button } from "../ui/button";
 import { supabase } from "@/supabaseClient";
 import { toast } from "react-toastify";
 import Spinner from "../Loader/Spinner";
-
 export default function AddProduct() {
   const {
     register,
@@ -180,8 +179,11 @@ export default function AddProduct() {
             {...register("title", { required: "Title is required" })}
           />
           {errors.title && (
-            <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
+            <p className="text-destructive text-[13px] mt-1">
+              {errors.title.message}
+            </p>
           )}
+
         </div>
 
         {/* Description */}
@@ -196,7 +198,7 @@ export default function AddProduct() {
             className="w-full border rounded p-2"
           />
           {errors.description && (
-            <p className="text-red-500 text-sm mt-1">
+            <p className="text-destructive text-[13px] mt-1">
               {errors.description.message}
             </p>
           )}
@@ -220,7 +222,7 @@ export default function AddProduct() {
                 })}
               />
               {errors[field.name] && (
-                <p className="text-red-500 text-sm mt-1">
+                <p className="text-destructive text-[13px] mt-1">
                   {errors[field.name].message}
                 </p>
               )}
@@ -250,7 +252,7 @@ export default function AddProduct() {
                 })}
               />
               {errors[field.name] && (
-                <p className="text-red-500 text-sm mt-1">
+                <p className="text-destructive text-[13px] mt-1">
                   {errors[field.name].message}
                 </p>
               )}
@@ -268,7 +270,7 @@ export default function AddProduct() {
             {...register("thumbnail", { required: "Thumbnail is required" })}
           />
           {errors.thumbnail && (
-            <p className="text-red-500 text-sm mt-1">
+            <p className="text-destructive text-[13px] mt-1">
               {errors.thumbnail.message}
             </p>
           )}
@@ -308,7 +310,7 @@ export default function AddProduct() {
         {/* Submit Button */}
         <Button
           type="submit"
-          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          className="px-4 py-2 text-white rounded hover:bg-green-400 cursor-pointer"
         >
           {isLoading ? (
             <span className="flex items-center">

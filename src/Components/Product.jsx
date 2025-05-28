@@ -33,7 +33,7 @@ export default function Product() {
   //   return <p className="text-center mt-6 text-red-500">Product not found.</p>;
   // }
   const { product: data, isLoading, error } = useFetchSnglPrdct(productid);
-const { cartProducts, addToCart, removeFromCart, clearCart } = useCart();
+const { addToCart } = useCart();
   if (error) {
     console.error(error);
     toast.error(error, { position: "bottom-center" });
@@ -71,7 +71,6 @@ const { cartProducts, addToCart, removeFromCart, clearCart } = useCart();
               className="w-full md:w-fit"
               onClick={() => {
                 addToCart(data);
-                navigate("/cart");
               }}
             >
               Add to Cart

@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { Info } from "lucide-react";
+import { EyeClosedIcon, EyeIcon, Info } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button } from "../ui/button";
 import { toast } from "react-toastify";
@@ -8,6 +8,9 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import Spinner from "../Loader/Spinner";
 import { UserContext } from "@/Contexts/UserContext";
+import { useShowPassword } from "@/hooks/useShowPassWord";
+import { FaLock } from "react-icons/fa";
+
 function Register() {
   const {
     register,
@@ -19,6 +22,7 @@ function Register() {
 
   const { setUser } = useContext(UserContext);
   const [isLoading, setIsLoading] = useState(false);
+  const { handleShowPassword, isPassword } = useShowPassword();
   const onSubmit = async (data) => {
     setIsLoading(true);
     const { email, password, firstname, lastname, gender, phone, address } =
@@ -49,7 +53,23 @@ function Register() {
         throw new Error(message);
       }
 
-      // Step 2: Insert user profile into the `users` table
+      // Step 2: Insert user role into the `user_roles` table
+      const roleData = {
+        user_id: user.id, // Matches auth.users(id)
+        role: "user",
+      };
+      const { error: roleError } = await supabase
+        .from("user_roles")
+        .insert([roleData]);
+
+      if (roleError) {
+        console.error("Supabase user_roles insert error:", roleError);
+        const message =
+          roleError.message || "There was an error saving user role.";
+        toast.error(message, { position: "bottom-center" });
+        throw new Error(message);
+      }
+      // Step 3: Insert user profile into the `users` table
       const userData = {
         user_id: user.id,
         email,
@@ -68,23 +88,6 @@ function Register() {
         console.error("Supabase users insert error:", profileError);
         const message =
           profileError.message || "There was an error saving user profile.";
-        toast.error(message, { position: "bottom-center" });
-        throw new Error(message);
-      }
-
-      // Step 3: Insert user role into the `user_roles` table
-      const roleData = {
-        user_id: user.id, // Matches auth.users(id)
-        role: "user",
-      };
-      const { error: roleError } = await supabase
-        .from("user_roles")
-        .insert([roleData]);
-
-      if (roleError) {
-        console.error("Supabase user_roles insert error:", roleError);
-        const message =
-          roleError.message || "There was an error saving user role.";
         toast.error(message, { position: "bottom-center" });
         throw new Error(message);
       }
@@ -181,10 +184,25 @@ function Register() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="password">Password</Label>
+            <Label
+              htmlFor="password"
+              className="flex justify-between items-center"
+            >
+              <span className="flex items-center">
+                <FaLock className="inline mr-2 text-gray-400" />
+                Password
+              </span>
+              <span onClick={() => handleShowPassword()}>
+                {isPassword ? (
+                  <EyeClosedIcon size={17} />
+                ) : (
+                  <EyeIcon size={17} />
+                )}
+              </span>
+            </Label>
             <Input
               id="password"
-              type="password"
+              type={isPassword ? "text" : "password"}
               placeholder="Enter a password"
               aria-describedby="password-error"
               {...register("password", {

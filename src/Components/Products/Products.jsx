@@ -28,7 +28,7 @@ function Products() {
             key={product.id}
             onClick={(e) => {
               e.stopPropagation();
-              // navigate(`/product/${product.id}`);
+              navigate(`/product/${product.id}`);
             }}
             className="group w-full max-w-[400px] rounded-md p-1.5 sm:p-3 shadow-lg hover:-translate-y-2 duration-500 ease-in-out transition-transform"
           >
@@ -52,13 +52,13 @@ function Products() {
                 ${product.price}
               </span>
               <Button
-                onClick={() => {
-                  addToCart(product);
-                  navigate("/cart");
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/product/${product.id}`);
                 }}
                 className="rounded-xl md:bg-green-500 md:hover:bg-green-700 cursor-pointer md:text-white bg-transparent text-green-500 md:shadow shadow-none text-[13px] sm:text-sm"
               >
-                Add to Cart
+                Quick View
               </Button>
             </CardFooter>
           </Card>

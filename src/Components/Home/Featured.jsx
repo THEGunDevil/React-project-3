@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useAxios } from "@/hooks/useAxios";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
@@ -10,18 +10,23 @@ import Fallback from "../Loader/Fallback";
 
 function Featured() {
   const navigate = useNavigate();
-  const { products: filteredFeaturedProducts, isLoading, error } = useFetchPrdcts();
+  const {
+    products: filteredFeaturedProducts,
+    isLoading,
+    error,
+  } = useFetchPrdcts();
   // const filteredFeaturedProducts =
   //   data?.products?.filter((p) => p.rating >= 4.5).slice(0, 3) || [];
-  localStorage.setItem(
+  useEffect(() => {
+      localStorage.setItem(
     "featuredProducts",
     JSON.stringify(filteredFeaturedProducts)
   );
+  },[filteredFeaturedProducts]);
   const featuredProducts = JSON.parse(localStorage.getItem("featuredProducts"));
 
   if (isLoading) {
-    return <Fallback/>
-
+    return <Fallback />;
   }
 
   if (error || featuredProducts.length === 0) {
@@ -51,7 +56,7 @@ function Featured() {
               onClick={() => navigate(`/product/${product.id}`)}
             >
               <img
-                src={product.images[0]}
+                src={product.thumbnail}
                 alt={product.title}
                 className="max-w-full max-h-full object-contain"
               />

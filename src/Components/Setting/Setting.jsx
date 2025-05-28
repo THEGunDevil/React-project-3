@@ -4,26 +4,44 @@ import { FaSignOutAlt } from "react-icons/fa";
 import { supabase } from "@/supabaseClient";
 import { toast } from "react-toastify";
 import { UserContext } from "@/Contexts/UserContext";
+import { useNavigate } from "react-router-dom";
 function Setting() {
-  const { user, setUser } = useContext(UserContext);
+    const { user, setUser, setUserRole } = useContext(UserContext);
+  const navigate = useNavigate();
+
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
-      toast.success("You've signed out successfully!", {
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error signing out:", error.message);
+        toast.error(`Error signing out: ${error.message}`, {
+          position: "bottom-center",
+        });
+        return;
+      }
+
+      // Clear local state and storage
+      setUser(null);
+      setUserRole(null);
+      localStorage.removeItem("user");
+
+      toast.success("Signed out successfully", {
         position: "top-center",
       });
-      localStorage.removeItem("user");
-      setUser(null);
-    } catch (error) {
-      console.error(error, "There was an issue signing out.");
-      toast.error("There was an issue signing out.", {
+      navigate("/signin");
+    } catch (err) {
+      console.error("Unexpected error during sign out:", err);
+      toast.error(`Unexpected error during sign out: ${err.message || err}`, {
         position: "bottom-center",
       });
     }
   };
+
+  if (!user) return null;
   return (
     <section className="mt-14 md:mt-20">
-      <Button onClick={handleSignOut}>
+      <Button className="mt-10 hover:bg-green-400 cursor-pointer" onClick={handleSignOut}>
         <FaSignOutAlt />
         Sign Out
       </Button>
