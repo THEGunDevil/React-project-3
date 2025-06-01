@@ -10,14 +10,30 @@ import AllUsersCard from "./AllUsersCard";
 import useFetchUsers from "@/hooks/useFetchUsers";
 import { useFetchOrders } from "@/hooks/useFetchOrders";
 import SearchedProduct from "./searchedProduct";
+import Orders from "./Orders";
+import Sales from "./Sales";
+import { useEffect, useState } from "react";
 
 export default function Dashboard() {
-  const { users, error: usersError, isLoading: usersLoading } = useFetchUsers();
+  const [totalRevenue, setTotalRevenue] = useState(0);
   const {
-    orders,
+    users = [],
+    error: usersError,
+    isLoading: usersLoading,
+  } = useFetchUsers();
+  const {
+    orders = [],
     error: ordersError,
     isLoading: ordersLoading,
   } = useFetchOrders();
+  useEffect(() => {
+    // Only recalc if we have at least one order (or orders array has changed)
+    const revenue = orders
+      .filter((order) => order.payment_status === "Pending")
+      .reduce((sum, order) => sum + Number(order.total_amount), 0);
+
+    setTotalRevenue(revenue);
+  }, [orders]);
   return (
     <div className="p-6 space-y-6 mt-14 md:mt-20 font-primary">
       <h1 className="text-3xl font-bold">Dashboard</h1>
@@ -73,7 +89,11 @@ export default function Dashboard() {
                 <ShoppingCart className="text-green-500" />
                 <div>
                   <p className="text-sm text-muted-foreground">Orders</p>
-                  <p className="text-lg font-semibold">{orders.length}</p>
+                  <p className="text-lg font-semibold">
+                    {ordersLoading
+                      ? "Loading..."
+                      : orders.length || "NO ORDERS"}
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -83,7 +103,7 @@ export default function Dashboard() {
                 <BarChart3 className="text-purple-500" />
                 <div>
                   <p className="text-sm text-muted-foreground">Revenue</p>
-                  <p className="text-lg font-semibold">$12,300</p>
+                  <p className="text-lg font-semibold">${totalRevenue}</p>
                 </div>
               </CardContent>
             </Card>
@@ -114,14 +134,19 @@ export default function Dashboard() {
             </TabsContent>
           </Tabs>
         </TabsContent>
-
+        <TabsContent value="orders">
+          {ordersLoading ? (
+            <p>Loading orders...</p>
+          ) : (
+            <Orders orders={orders} />
+          )}{" "}
+        </TabsContent>
         <TabsContent value="sales">
-          <Card>
-            <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Sales Report</h2>
-              <p>Detailed sales statistics will appear here.</p>
-            </CardContent>
-          </Card>
+          {ordersLoading ? (
+            <p>Loading orders...</p>
+          ) : (
+            <Sales orders={orders} totalRevenue={totalRevenue} />
+          )}
         </TabsContent>
         <TabsContent value="product">
           <Tabs defaultValue="searchproduct" className="space-y-4">

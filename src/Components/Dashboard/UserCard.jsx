@@ -33,7 +33,7 @@ export default function UserCard() {
   return (
     <>
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="w-xl max-w-xl mx-auto p-5">
           <h2 className="text-2xl font-bold mb-4">User Search</h2>
           <form
             onSubmit={handleSubmit(fetchUser)}
@@ -82,7 +82,7 @@ User Email
           <CardContent className="p-6 flex flex-col items-center gap-4">
             <Avatar className="w-20 h-20">
               <AvatarImage
-                src={searchedUser.imageUrl}
+                src={searchedUser.imageUrl || "/Images/default-avatar-icon-of-social-media-user-vector.jpg"}
                 alt={searchedUser.name}
               />
               <AvatarFallback>{searchedUser.name?.charAt(0)}</AvatarFallback>

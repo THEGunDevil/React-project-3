@@ -4,29 +4,38 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "./ui/input";
 export function BanConfirmPopUp({
   banPopUp,
-  cancelBan,
-  confirmBan,
+  cancelBtn,
+  confirmBtn,
   inputValue,
   setInputValue,
   errorMessage,
+  currentStatus,
 }) {
   const handleChange = (e) => {
     setInputValue(e.target.value);
   };
   return (
     <section className="absolute z-50 top-1/2 left-1/2 -translate-1/2 flex w-screen h-screen justify-center items-center">
-      {" "}
-      <Dialog open={banPopUp} onOpenChange={cancelBan}>
+      <Dialog open={banPopUp} onOpenChange={cancelBtn}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Are You Sure You Want to Ban This User?</DialogTitle>
+            <DialogTitle>
+              Are You Sure You Want to {currentStatus ? "Ban" : "Unban"} This
+              User?
+            </DialogTitle>
+            <DialogDescription>
+              This action will block this user from all your services.
+            </DialogDescription>
             <p className="text- text-shadow-destructive">
-              ⚠️ To proceed with banning, please write <b>Confirm Ban</b> below.
+              ⚠️ To proceed with {currentStatus ? "banning" : "unbanning"},
+              please write{" "}
+              <b>{currentStatus ? "Confirm Ban" : "Confirm Unban"}</b> below.
             </p>
             <Input
               type="text"
@@ -38,17 +47,17 @@ export function BanConfirmPopUp({
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={cancelBan}
+              onClick={cancelBtn}
               className="cursor-pointer"
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
-              onClick={confirmBan}
+              onClick={confirmBtn}
               className="cursor-pointer hover:bg-red-700"
             >
-              Delete
+              {currentStatus ? "Confirm Ban" : "Confirm Unban"}
             </Button>
           </DialogFooter>
         </DialogContent>

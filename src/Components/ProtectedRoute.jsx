@@ -3,10 +3,10 @@ import { Navigate } from "react-router-dom";
 import { UserContext } from "../Contexts/UserContext";
 
 const ProtectedRoute = ({ element, requireAdmin = false }) => {
-  const { user, userRole } = useContext(UserContext);
+  const { user } = useContext(UserContext);
 
   // If the route requires admin and user is not an admin, redirect to 404 or home
-  if (requireAdmin && userRole !== "admin") {
+  if (requireAdmin && user?.role !== "admin") {
     return <Navigate to="*" replace />;
   }
 

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useMemo } from "react";
+import React, { useContext, useState, useMemo } from "react";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LayoutDashboard, Menu } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
 import {
@@ -21,66 +22,15 @@ import {
 import { Input } from "../ui/input";
 import { DialogTitle } from "../ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { supabase } from "@/supabaseClient";
-import LogoSvg from "@/LogoSvg";
+// import { supabase } from "@/supabaseClient";
+import LogoSvg from "@/Components/LogoSvg";
 import { UserContext } from "@/Contexts/UserContext";
+import Fallback from "../Loader/Fallback";
+
 export default function Header() {
   const [open, setOpen] = useState(false);
-  const { user, setUser, userRole, setUserRole } = useContext(UserContext);
-  const [loading, setLoading] = useState(true);
-
-  // Fetch user and role
-  useEffect(() => {
-    async function fetchUserData() {
-      try {
-        const storedUser = JSON.parse(localStorage.getItem("user"));
-        const storedRole = localStorage.getItem("role");
-
-        if (storedUser && storedRole) {
-          setUser(storedUser);
-          setUserRole(storedRole);
-        } else {
-          const {
-            data: { user: supaUser },
-            error: authError,
-          } = await supabase.auth.getUser();
-
-          if (authError || !supaUser) {
-            setUser(null);
-            setUserRole(null);
-            return;
-          }
-
-          setUser(supaUser);
-          localStorage.setItem("user", JSON.stringify(supaUser));
-
-          const { data, error } = await supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", supaUser.id)
-            .single();
-
-          if (error) {
-            console.error("Error fetching role:", error);
-            setUserRole(null);
-          } else {
-            setUserRole(data.role);
-            localStorage.setItem("role", data.role);
-            setUser((prev) => ({ ...prev, role: data.role }));
-          }
-        }
-      } catch (err) {
-        console.error("Error in fetchUserData:", err);
-        setUser(null);
-        setUserRole(null);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchUserData();
-  }, [setUser, setUserRole]);
-
+  const { user, loading } = useContext(UserContext);
+  
   const menuItems = useMemo(() => {
     const baseItems = [
       { title: "Home", path: "/", icon: FaHome },
@@ -93,15 +43,11 @@ export default function Header() {
     if (!user) {
       baseItems.push(
         { title: "Sign In", path: "/signin", icon: FaSignInAlt },
-        {
-          title: "Register",
-          path: "/register",
-          icon: FaUserPlus,
-        }
+        { title: "Register", path: "/register", icon: FaUserPlus }
       );
     }
 
-    if (!loading && userRole === "admin") {
+    if (!loading && user?.role === "admin") {
       baseItems.push({
         title: "Dashboard",
         path: "/dashboard",
@@ -110,12 +56,12 @@ export default function Header() {
     }
 
     return baseItems;
-  }, [user, userRole, loading]);
+  }, [user, loading]);
 
   return (
-    <nav className="bg-white font-primary w-full flex items-center fixed top-0 left-0 z-50 md:h-20 h-14">
+    <nav className="bg-white font-primary w-full flex items-center fixed top-0 left-0 z-50 md:h-20 h-14" aria-label="Main navigation">
       <div className="items-center px-6 flex justify-between w-screen mx-auto md:flex py-3 md:py-5">
-        <Link to="/">
+        <Link to="/" aria-label="Home page">
           <LogoSvg />
         </Link>
 
@@ -124,11 +70,13 @@ export default function Header() {
           <Input
             type="search"
             className="text-xs border-none px-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-            placeholder="Type"
+            placeholder="Search site"
+            aria-label="Search"
           />
           <button
             type="button"
             className="text-xs border-l px-1 py-0.5 md:py-1 cursor-pointer bg-transparent"
+            aria-label="Submit search"
           >
             Search
           </button>
@@ -137,17 +85,17 @@ export default function Header() {
         {/* Mobile Menu */}
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="lg:hidden">
+            <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu">
               <Menu />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left">
+          <SheetContent side="left" aria-describedby="mobile-nav-description">
             <VisuallyHidden asChild>
-              <DialogTitle>Navigation Menu</DialogTitle>
+              <DialogTitle id="mobile-nav-description">Navigation Menu</DialogTitle>
             </VisuallyHidden>
             <nav className="flex flex-col gap-2 py-15">
               {loading ? (
-                <p>Loading menu...</p>
+                <Skeleton className="h-8 w-full" />
               ) : (
                 menuItems.map((item) => (
                   <NavLink
@@ -159,8 +107,9 @@ export default function Header() {
                         isActive ? "text-primary" : ""
                       }`
                     }
+                    aria-current={item.isActive ? "page" : undefined}
                   >
-                    <item.icon size={17} />
+                    <item.icon size={17} aria-hidden="true" />
                     {item.title}
                   </NavLink>
                 ))
@@ -168,11 +117,12 @@ export default function Header() {
             </nav>
           </SheetContent>
         </Sheet>
+
         {/* Desktop Menu */}
         <NavigationMenu className="hidden lg:block">
           <NavigationMenuList>
             {loading ? (
-              <p>Loading menu...</p>
+              <Fallback className="h-8 w-32" />
             ) : (
               menuItems.map((item) => (
                 <NavigationMenuItem key={item.title}>
@@ -183,9 +133,10 @@ export default function Header() {
                         isActive ? "text-primary" : ""
                       } hover:text-primary`
                     }
+                    aria-current={item.isActive ? "page" : undefined}
                   >
                     <div className="flex gap-1.5 items-center text-md">
-                      <item.icon size={17} />
+                      <item.icon size={17} aria-hidden="true" />
                       {item.title}
                     </div>
                   </NavLink>

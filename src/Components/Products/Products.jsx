@@ -11,12 +11,10 @@ import {
 import { Button } from "../ui/button";
 import { useTruncate } from "@/hooks/useTruncate";
 import { useNavigate } from "react-router-dom";
-import { useCart } from "@/Contexts/CartContext";
 function Products() {
   const { products } = useFetchPrdcts();
   const Truncate = useTruncate();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
   return (
     <section className="p-6 space-y-5 font-primary">
       <h1 className="text-xl text-primary font-primary font-bold">
@@ -49,7 +47,7 @@ function Products() {
             </CardContent>
             <CardFooter className="flex flex-row items-center justify-between px-1.5">
               <span className="text-lg font-bold text-green-600">
-                ${product.price}
+                ${Number(product.price) - (Number(product.discount) || 0)}
               </span>
               <Button
                 onClick={(e) => {

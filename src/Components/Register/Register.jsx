@@ -6,8 +6,8 @@ import { toast } from "react-toastify";
 import { supabase } from "@/supabaseClient";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { useNavigate } from "react-router-dom";
 import Spinner from "../Loader/Spinner";
-import { UserContext } from "@/Contexts/UserContext";
 import { useShowPassword } from "@/hooks/useShowPassWord";
 import { FaLock } from "react-icons/fa";
 
@@ -19,14 +19,13 @@ function Register() {
     formState: { errors },
     reset,
   } = useForm();
-
-  const { setUser } = useContext(UserContext);
   const [isLoading, setIsLoading] = useState(false);
-  const { handleShowPassword, isPassword } = useShowPassword();
+  const { handleShowPassword, showPassword } = useShowPassword();
+  const navigate = useNavigate();
+
   const onSubmit = async (data) => {
     setIsLoading(true);
-    const { email, password, firstname, lastname, gender, phone, address } =
-      data;
+    const { email, password, firstname, lastname, gender, phone, address } = data;
     try {
       // Step 1: Sign up the user with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -53,31 +52,16 @@ function Register() {
         throw new Error(message);
       }
 
-      // Step 2: Insert user role into the `user_roles` table
-      const roleData = {
-        user_id: user.id, // Matches auth.users(id)
-        role: "user",
-      };
-      const { error: roleError } = await supabase
-        .from("user_roles")
-        .insert([roleData]);
-
-      if (roleError) {
-        console.error("Supabase user_roles insert error:", roleError);
-        const message =
-          roleError.message || "There was an error saving user role.";
-        toast.error(message, { position: "bottom-center" });
-        throw new Error(message);
-      }
-      // Step 3: Insert user profile into the `users` table
+      // Step 2: Insert user profile into the `users` table
       const userData = {
-        user_id: user.id,
         email,
         firstname,
         lastname,
         gender: gender || null,
         phone: phone || null,
         address: address || null,
+        role: "user", // Default role
+        is_active: true, // Default active status
       };
 
       const { error: profileError } = await supabase
@@ -92,11 +76,9 @@ function Register() {
         throw new Error(message);
       }
 
-      if (setUser) {
-        setUser(authData.user);
-      }
       toast.success("User created successfully!", { position: "top-center" });
-      setTimeout(() => reset(), 2000);
+      navigate("/signin");
+      reset();
 
       if (!authData.session) {
         toast.info("Please check your email to verify your account.", {
@@ -111,11 +93,13 @@ function Register() {
       setIsLoading(false);
     }
   };
+
   return (
     <section className="font-primary mt-14 md:mt-20 py-8 md:py-16 flex justify-center bg-green-200">
       <form
         className="w-full mt-16 bg-white max-w-[330px] md:max-w-2xl lg:max-w-3xl shadow p-7 rounded-lg grid grid-cols-1 md:grid-cols-2 gap-y-5 md:gap-x-10 place-items-center md:place-items-start"
         onSubmit={handleSubmit(onSubmit)}
+        aria-label="User registration form"
       >
         {/* Required Information */}
         <div className="w-full space-y-5">
@@ -192,17 +176,17 @@ function Register() {
                 <FaLock className="inline mr-2 text-gray-400" />
                 Password
               </span>
-              <span onClick={() => handleShowPassword()}>
-                {isPassword ? (
-                  <EyeClosedIcon size={17} />
-                ) : (
-                  <EyeIcon size={17} />
-                )}
-              </span>
+              <button
+                type="button"
+                onClick={handleShowPassword}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeClosedIcon size={17} /> : <EyeIcon size={17} />}
+              </button>
             </Label>
             <Input
               id="password"
-              type={isPassword ? "text" : "password"}
+              type={showPassword ? "text" : "password"}
               placeholder="Enter a password"
               aria-describedby="password-error"
               {...register("password", {
@@ -211,6 +195,10 @@ function Register() {
                   value: 8,
                   message: "Password must be at least 8 characters.",
                 },
+                // pattern: {
+                //   value: /^(?=.*[0-9])(?=.*[!@#$%^&*])/,
+                //   message: "Password must include a number and a special character.",
+                // },
               })}
             />
             {errors.password && (
@@ -219,8 +207,10 @@ function Register() {
               </p>
             )}
             <span className="flex items-center mt-1">
-              <Info size={16} className="mr-1" />
-              <p className="text-xs">Password must be 8 characters long</p>
+              <Info size={16} className="mr-1" aria-hidden="true" />
+              <p className="text-xs">
+                Password must be 8+ characters long.
+              </p>
             </span>
           </div>
 
@@ -228,7 +218,7 @@ function Register() {
             <Label htmlFor="confirmPassword">Confirm Password</Label>
             <Input
               id="confirmPassword"
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Confirm your password"
               aria-describedby="confirmPassword-error"
               {...register("confirmPassword", {
@@ -238,10 +228,7 @@ function Register() {
               })}
             />
             {errors.confirmPassword && (
-              <p
-                id="confirmPassword-error"
-                className="text-destructive text-sm"
-              >
+              <p id="confirmPassword-error" className="text-destructive text-sm">
                 {errors.confirmPassword.message}
               </p>
             )}
@@ -258,6 +245,7 @@ function Register() {
               id="gender"
               {...register("gender")}
               className="block w-full px-3 py-1 border rounded-md"
+              aria-label="Select your gender"
             >
               <option value="female">Female</option>
               <option value="male">Male</option>
@@ -292,6 +280,7 @@ function Register() {
               id="address"
               type="text"
               placeholder="Enter your current address"
+              aria-label="Enter your address"
               {...register("address")}
             />
           </div>
@@ -302,6 +291,7 @@ function Register() {
           variant="outline"
           disabled={isLoading}
           className="w-full hover:bg-primary hover:text-white col-span-1 md:col-span-2"
+          aria-label="Submit registration"
         >
           {isLoading ? (
             <span className="flex items-center">
@@ -310,7 +300,7 @@ function Register() {
             </span>
           ) : (
             "Submit"
-          )}{" "}
+          )}
         </Button>
       </form>
     </section>

@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import { UserContext } from "@/Contexts/UserContext";
 import { useNavigate } from "react-router-dom";
 function Setting() {
-    const { user, setUser, setUserRole } = useContext(UserContext);
+    const { user, setUser } = useContext(UserContext);
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -23,7 +23,6 @@ function Setting() {
 
       // Clear local state and storage
       setUser(null);
-      setUserRole(null);
       localStorage.removeItem("user");
 
       toast.success("Signed out successfully", {

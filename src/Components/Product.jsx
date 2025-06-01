@@ -64,7 +64,7 @@ const { addToCart } = useCart();
             {data.description}
           </CardDescription>
           <div className="text-2xl font-semibold text-green-500">
-            ${data.price}
+                ${Number(data.price) - (Number(data.discount) || 0)}
           </div>
           <CardFooter className="p-0 mt-4">
             <Button
