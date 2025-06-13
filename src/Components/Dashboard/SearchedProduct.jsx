@@ -10,18 +10,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Fallback from "../Loader/Fallback";
 import { useState } from "react";
-import { useFetchSnglPrdct } from "@/hooks/useFetchSnglPrdct";
 import { Edit2, Info, Trash2 } from "lucide-react";
 import { Label } from "../ui/label";
 import { useForm } from "react-hook-form";
 import { supabase } from "@/supabaseClient";
 import { DeleteConfirmPopUp } from "../DeleteConfirmPopUp";
+import { useSupabaseQuery } from "@/hooks/useSupabaseQuery";
+import SearchBox from "./SearchBox";
 
 export default function SearchedProduct() {
   const [searchedProduct, setSearchedProduct] = useState(null);
   const [deletePopUp, setDeletePopUp] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [inputValue, setInputValue] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const {
     register,
@@ -30,24 +32,27 @@ export default function SearchedProduct() {
     formState: { errors, isDirty },
   } = useForm();
   const searchedId = watch("id");
+  // const {
+  //   data: product,
+  //   error: productError,
+  //   loading,
+  // } = useSupabaseQuery({
+  //   table: "products",
+  //   filters: [{ column: "id", operator: "eq", value: searchedId }],
+  //   single: true,
+  //   enabled: !!searchedId,
+  // });
 
-  const {
-    product,
-    error: productError,
-    isLoading,
-  } = useFetchSnglPrdct(searchedId);
-
-  // Fetch product
-  const fetchProduct = (e) => {
-    if (product) {
-      setSearchedProduct(product);
-      console.log("Fetched product:", product);
-    } else if (productError) {
-      console.error("Error fetching product:", productError);
-    } else {
-      console.warn("No product found with this ID.");
-    }
-  };
+  // // Fetch product
+  // const fetchProduct = () => {
+  //   if (product) {
+  //     setSearchedProduct(product);
+  //   } else if (productError) {
+  //     console.error("Error fetching product:", productError);
+  //   } else {
+  //     console.warn("No product found with this ID.");
+  //   }
+  // };
 
   // Delete Product
   const confirmDelete = async () => {
@@ -84,7 +89,18 @@ export default function SearchedProduct() {
 
   return (
     <>
-      <Card>
+      <SearchBox
+        inputType="id"
+        setSearchedData={setSearchedProduct}
+        fetchFrom="products"
+        column="id"
+        operator="eq"
+        singleFetch={true}
+        searchedTo="Fetch"
+        loading={loading}
+        setLoading={setLoading}
+      />
+      {/* <Card>
         <CardContent className="w-xl max-w-xl mx-auto p-5">
           <h2 className="text-2xl font-bold mb-4">Search Product</h2>
           <form
@@ -113,7 +129,7 @@ export default function SearchedProduct() {
             </div>
             <Button
               type="submit"
-              disabled={isLoading || !searchedId}
+              disabled={loading || !searchedId}
               className="hover:bg-green-400 cursor-pointer"
             >
               Load Product
@@ -125,9 +141,9 @@ export default function SearchedProduct() {
             </p>
           )}
         </CardContent>
-      </Card>
+      </Card> */}
 
-      {isLoading ? (
+      {loading ? (
         <Fallback />
       ) : searchedProduct ? (
         <Card className="mt-6 p-5 rounded-2xl shadow-md overflow-hidden mx-auto flex flex-row justify-center">

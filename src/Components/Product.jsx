@@ -10,15 +10,15 @@ import { Star } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 // import { useAxios } from "@/hooks/useAxios";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import Fallback from "./Loader/Fallback";
-import { useFetchSnglPrdct } from "@/hooks/useFetchSnglPrdct";
 import { useCart } from "@/Contexts/CartContext";
+import { useSupabaseQuery } from "@/hooks/useSupabaseQuery";
+import { useUtils } from "@/hooks/useUtils";
 export default function Product() {
+const {CalculateDiscount} = useUtils()
   const { productid } = useParams();
-  const navigate = useNavigate();
-  
   // const { data, loading, error } = useAxios(
   //   `https://dummyjson.com/products/${productid}`
   // );
@@ -32,14 +32,24 @@ export default function Product() {
   // if (error || !data) {
   //   return <p className="text-center mt-6 text-red-500">Product not found.</p>;
   // }
-  const { product: data, isLoading, error } = useFetchSnglPrdct(productid);
-const { addToCart } = useCart();
+  const { addToCart } = useCart();
+  const { data, error, loading } = useSupabaseQuery({
+    table: "products",
+    select: "*",
+    filters: [{ column: "id", operator: "eq", value: productid }],
+    single: true,
+  });
+
+  if (loading) return <Fallback />;
   if (error) {
     console.error(error);
     toast.error(error, { position: "bottom-center" });
     return <p className="text-center mt-6 text-red-500">Product not found.</p>;
   }
-  if (isLoading) return <Fallback />;
+  if (!data) {
+    return <p className="text-center mt-6 text-red-500">Product not found.</p>;
+  }
+
   return (
     <section className="px-4 mt-14 md:mt-20 md:px-20 flex items-center justify-center font-primary">
       <Card className="w-screen border-0 shadow-none mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 px-0the">
@@ -64,11 +74,11 @@ const { addToCart } = useCart();
             {data.description}
           </CardDescription>
           <div className="text-2xl font-semibold text-green-500">
-                ${Number(data.price) - (Number(data.discount) || 0)}
+            ${CalculateDiscount(data.price, data.discount)}
           </div>
           <CardFooter className="p-0 mt-4">
             <Button
-              className="w-full md:w-fit"
+              className="w-full md:w-fit hover:bg-green-400 cursor-pointer"
               onClick={() => {
                 addToCart(data);
               }}

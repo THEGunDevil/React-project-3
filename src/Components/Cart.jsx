@@ -9,14 +9,21 @@ import { supabase } from "@/supabaseClient";
 import { toast } from "react-toastify";
 import Fallback from "./Loader/Fallback";
 import Spinner from "./Loader/Spinner";
+import { useNavigate } from "react-router-dom";
+import { useUtils } from "@/hooks/useUtils";
 
 export default function Cart() {
   const { cartProducts, setCartProducts, removeFromCart } = useCart();
   const { user } = useContext(UserContext);
   const [isLoading, setIsLoading] = useState(false);
-  
+  const {truncate,CalculateDiscount} = useUtils();
+  const navigate = useNavigate();
   const total = Array.isArray(cartProducts)
-    ? cartProducts.reduce((sum, item) => sum + (Number(item.price) - (Number(item.discount) || 0)) * item.quantity, 0)
+    ? cartProducts.reduce(
+        (sum, item) =>
+          sum + CalculateDiscount(item.price, item.discount) * item.quantity,
+        0
+      )
     : 0;
 
   const handleCheckOut = async () => {
@@ -36,14 +43,23 @@ export default function Cart() {
     const orderPayload = {
       user_id: user.id,
       quantity: cartProducts.length,
-      customer:`${user.userName}`,
+      customer: `${user.userName}`,
+      customer_email:user.email,
       total_amount: parseFloat(total.toFixed(2)),
       payment_status: "Pending",
       delivery_status: "Pending",
-      order_status:"Pending",
-      delivery_method:"Home delivery",
+      order_status: "Pending",
+      delivery_method: "Home delivery",
       payment_method: "stripe",
       shipping_address: "Not Provided",
+      shipping_city: "Not Provided",
+      shipping_country: "Not Provided",
+      shipping_state_province: "Not Provided",
+      shipping_postal_code: "Not Provided",
+      shipping_phone_number: "Not Provided",
+      shipping_email: "Not Provided",
+      shipping_district: "Not Provided",
+      shipping_division: "Not Provided",
       created_at: now,
       updated_at: now,
     };
@@ -56,19 +72,22 @@ export default function Cart() {
         .single();
 
       if (orderError) throw orderError;
+
       const orderId = orderData.id;
 
       // 2) Create the order_items records, including created_at/updated_at
-      
+
       const itemsPayload = cartProducts.map((p) => ({
         order_id: orderId,
         product_id: p.id,
         title: p.title,
-        description:p.description,
+        description: p.description,
         quantity: p.quantity,
         discount: p.discount || 0,
-        price: parseFloat((Number(p.price) - (Number(p.discount) || 0)).toFixed(2)),
-        total_price: parseFloat(((Number(p.price) - (Number(p.discount) || 0)) * p.quantity).toFixed(2)),
+        price: parseFloat(CalculateDiscount(p.price, p.discount).toFixed(2)),
+        total_price: parseFloat(
+          (CalculateDiscount(p.price, p.discount) * p.quantity).toFixed(2)
+        ),
         created_at: now,
         updated_at: now,
       }));
@@ -83,7 +102,9 @@ export default function Cart() {
         throw itemsError;
       }
 
-      toast.success("Order placed successfully!", { position: "bottom-center" });
+      toast.success("Order placed successfully!", {
+        position: "bottom-center",
+      });
       setCartProducts([]);
     } catch (error) {
       console.error(error);
@@ -91,12 +112,14 @@ export default function Cart() {
     } finally {
       setIsLoading(false);
     }
+    // navigate("/shippinginformation");
   };
 
   if (isLoading) return <Fallback />;
+  
 
   return (
-    <section className="mt-15 md:mt-20 font-primary w-screen p-6">
+    <section className="mt-14 md:mt-20 font-primary w-screen p-6">
       <Card className="w-full min-w-[320px] mx-auto shadow-xl md:px-6">
         <CardHeader>
           <CardTitle>Shopping Cart</CardTitle>
@@ -112,7 +135,7 @@ export default function Cart() {
                 key={item.id}
                 className="flex justify-between items-center border-b pb-2 relative"
               >
-                <div className="flex items-center space-x-3">
+                <div className="flex w-full items-center space-x-3">
                   <div className="w-15 md:w-25 flex justify-center items-center">
                     <img
                       src={item.thumbnail}
@@ -120,17 +143,24 @@ export default function Cart() {
                       className="md:h-18 h-13"
                     />
                   </div>
-                  <p className="font-medium text-[13px] md:text-md text-primary sm:w-40 w-20">
-                    {item.title}
+                  <p className="font-medium text-[13px] md:text-md text-primary">
+                    {truncate(item.title, 20)}
                   </p>
                 </div>
-                <div className="flex items-center justify-between sm:w-60 w-30">
-                  <QuantityBtn itemId={item.id} quantity={item.quantity} />
+                <div className="flex items-center justify-end w-full sm:gap-x-8 gap-x-5">
+                  <span className="w-fit">
+                    <QuantityBtn itemId={item.id} quantity={item.quantity} />
+                  </span>
                   <p className="text-[13px] hidden sm:block text-muted-foreground">
-                    ${Number(item.price) - (Number(item.discount) || 0)} × {item.quantity}
+                    ${CalculateDiscount(item.price, item.discount)} ×
+                    {item.quantity}
                   </p>
-                  <div className="text-primary">
-                    ${((Number(item.price) - (Number(item.discount) || 0)) * item.quantity).toFixed(2)}
+                  <div className="text-primary text-sm">
+                    $
+                    {(
+                      CalculateDiscount(item.price, item.discount) *
+                      item.quantity
+                    ).toFixed(2)}
                   </div>
                   <button
                     className="cursor-pointer hover:text-destructive absolute -top-2 right-0"
@@ -151,7 +181,7 @@ export default function Cart() {
             </div>
             <Button
               className="hover:bg-green-400 bg-green-500 float-right"
-              onClick={handleCheckOut}
+              onClick={() => handleCheckOut()}
               disabled={!user}
             >
               {isLoading ? (

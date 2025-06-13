@@ -12,20 +12,22 @@ import { ToastContainer } from "react-toastify";
 import Fallback from "./Components/Loader/Fallback";
 import { CartProvider } from "./Contexts/CartContext";
 import ProtectedRoute from "./Components/ProtectedRoute";
+import ShippingInformationForm from "./Components/ShippingInformation";
+import PaymentPage from "./Components/PaymentPage";
+import OrderConfirmation from "./Components/OrderConfirmation";
 // Lazy-loaded components
 const Home = lazy(() => import("./Components/Home/Home"));
 const Profile = lazy(() => import("./Components/Profile/Profile"));
 const Product = lazy(() => import("./Components/Product"));
 const Setting = lazy(() => import("./Components/Setting/Setting"));
 const Cart = lazy(() => import("./Components/Cart"));
-const Dashboard = lazy(()=>import("./Components/Dashboard/Dashboard"))
-
+const Dashboard = lazy(() => import("./Components/Dashboard/Dashboard"));
+const OrderReview = lazy(() => import("./Components/OrderReview"));
 const NotFound = () => (
   <div className="flex py-10 justify-center items-center mt-14 md:mt-20">
     <h1 className="text-2xl font-bold">404 - Page Not Found</h1>
   </div>
 );
-
 function App() {
   const { user } = useContext(UserContext);
 
@@ -63,6 +65,22 @@ function App() {
           element: (
             <ProtectedRoute element={<Dashboard />} requireAdmin={true} />
           ), // Protected for admin only
+        },
+        {
+          path: "shippinginformation",
+          element: <ProtectedRoute element={<ShippingInformationForm />} />,
+        },
+        {
+          path: "paymentpage",
+          element: <ProtectedRoute element={<PaymentPage />} />,
+        },
+        {
+          path: "orderreview",
+          element: <ProtectedRoute element={<OrderReview />} />,
+        },
+        {
+          path: "/orderconfirmation",
+          element: <ProtectedRoute element={<OrderConfirmation />} />,
         },
         { path: "*", element: <NotFound /> }, // Catch-all for 404
       ],

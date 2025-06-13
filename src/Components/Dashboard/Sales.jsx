@@ -19,27 +19,28 @@ export default function Sales({ orders = [], totalRevenue }) {
     const { data, error } = await supabase
       .from("order_items")
       .select(
-        `
-          product_id,
-          quantity,
-          price,
-          discount,
-          title
+    `
+      product_id,
+      quantity,
+      price,
+      discount,
+      title
 
-        `
+    `
       )
       .gte("quantity", 1);
 
-    if (error) {
-      console.error("Error fetching order items", error);
-      return;
-    }
+  
+  if (error) {
+    console.error("Error fetching order items", error);
+    return;
+  }
 
     // Aggregate sales by product
     const aggregated = (data || []).reduce((acc, item) => {
       const pid = item.product_id;
       const title = item.title || "Unknown Product";
-      const netPrice = Number(item.price) - (Number(item.discount) || 0);
+      const netPrice = Number(item.price);
       const revenue = netPrice * Number(item.quantity);
 
       if (!acc[pid]) {

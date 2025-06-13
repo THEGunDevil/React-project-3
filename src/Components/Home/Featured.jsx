@@ -25,9 +25,9 @@ function Featured() {
   },[filteredFeaturedProducts]);
   const featuredProducts = JSON.parse(localStorage.getItem("featuredProducts"));
 
-  if (isLoading) {
-    return <Fallback />;
-  }
+  // if (isLoading) {
+  //   return <Fallback />;
+  // }
 
   if (error || featuredProducts.length === 0) {
     return (

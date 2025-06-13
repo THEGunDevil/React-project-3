@@ -8,3 +8,4 @@
 |  About us / Services  |
 |  Footer               |
 -------------------------
+[Cart] → [Shipping Information] → [Payment] → [Order Review] → [Confirmation]

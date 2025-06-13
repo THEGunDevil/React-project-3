@@ -1,26 +1,50 @@
 import { useState } from "react";
 import { supabase } from "@/supabaseClient";
 
-function StatusDropdown({ order }) {
-  const [status, setStatus] = useState(order.order_status); // Local state
+function StatusDropdown({ order, statusType }) {
+  const [status, setStatus] = useState(order[statusType]);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const options = {
+    order_status: [
+      "Pending",
+      "Delivered",
+      "Shipped",
+      "Processing",
+      "Completed",
+      "Cancelled",
+      "Refunded",
+    ],
+    delivery_status: [
+      "Out for Delivery",
+      "Not Shipped",
+      "Shipped",
+      "Delivered",
+      "Returned",
+      "Failed Delivery",
+    ],
+  };
 
   const handleChange = async (newStatus) => {
-    setStatus(newStatus); // Update UI immediately
+    const previousStatus = status;
+    setStatus(newStatus);
+    setIsUpdating(true);
 
     try {
       const { error } = await supabase
         .from("orders")
-        .update({ order_status: newStatus })
+        .update({ [statusType]: newStatus })
         .eq("id", order.id);
 
       if (error) {
         console.error("Error updating order status:", error);
-        setStatus(order.order_status); // Revert on error
-        return;
+        setStatus(previousStatus);
       }
     } catch (err) {
       console.error("Unexpected error:", err);
-      setStatus(order.order_status); // Revert on error
+      setStatus(previousStatus);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -30,15 +54,13 @@ function StatusDropdown({ order }) {
       className="block w-fit px-3 py-1 border rounded-md"
       aria-label="Selecting order status"
       onChange={(e) => handleChange(e.target.value)}
+      disabled={isUpdating}
     >
-      <option value="Pending">Pending</option>
-      <option value="Delivered">Delivered</option>
-      <option value="Shipped">Shipped</option>
-      <option value="Processing">Processing</option>
-      <option value="Completed">Completed</option>
-      <option value="Cancelled">Cancelled</option>
-      <option value="Refunded">Refunded</option>
-      
+      {options[statusType].map((option) => (
+        <option key={option} value={option}>
+          {option}
+        </option>
+      ))}
     </select>
   );
 }
