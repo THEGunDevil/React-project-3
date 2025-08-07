@@ -7,15 +7,12 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import Fallback from "../Loader/Fallback";
 import { useState } from "react";
-import { Edit2, Info, Trash2 } from "lucide-react";
-import { Label } from "../ui/label";
+import { Edit2, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { supabase } from "@/supabaseClient";
 import { DeleteConfirmPopUp } from "../DeleteConfirmPopUp";
-import { useSupabaseQuery } from "@/hooks/useSupabaseQuery";
 import SearchBox from "./SearchBox";
 
 export default function SearchedProduct() {
@@ -26,33 +23,9 @@ export default function SearchedProduct() {
   const [loading, setLoading] = useState(false);
 
   const {
-    register,
-    handleSubmit,
     watch,
-    formState: { errors, isDirty },
   } = useForm();
   const searchedId = watch("id");
-  // const {
-  //   data: product,
-  //   error: productError,
-  //   loading,
-  // } = useSupabaseQuery({
-  //   table: "products",
-  //   filters: [{ column: "id", operator: "eq", value: searchedId }],
-  //   single: true,
-  //   enabled: !!searchedId,
-  // });
-
-  // // Fetch product
-  // const fetchProduct = () => {
-  //   if (product) {
-  //     setSearchedProduct(product);
-  //   } else if (productError) {
-  //     console.error("Error fetching product:", productError);
-  //   } else {
-  //     console.warn("No product found with this ID.");
-  //   }
-  // };
 
   // Delete Product
   const confirmDelete = async () => {
@@ -99,49 +72,9 @@ export default function SearchedProduct() {
         searchedTo="Fetch"
         loading={loading}
         setLoading={setLoading}
+        label="Product Id"
+        header="Search Products"
       />
-      {/* <Card>
-        <CardContent className="w-xl max-w-xl mx-auto p-5">
-          <h2 className="text-2xl font-bold mb-4">Search Product</h2>
-          <form
-            onSubmit={handleSubmit(fetchProduct)}
-            className="md:space-y-5 space-y-4"
-          >
-            <div className="space-y-2">
-              <Label htmlFor="id" className="text-primary text-lg">
-                Product Id
-              </Label>
-              <Input
-                id="id"
-                type="text"
-                placeholder="Enter Product ID"
-                {...register("id", { required: "Product ID is required" })}
-              />
-              {errors.id && (
-                <p className="text-destructive text-[13px] mt-1">
-                  {errors.id.message}
-                </p>
-              )}
-              <p className="text-muted-foreground flex items-center gap-1 text-[13px] mt-1">
-                <Info size={13} />
-                NOTE: Product id is needed to search a product’s information.
-              </p>
-            </div>
-            <Button
-              type="submit"
-              disabled={loading || !searchedId}
-              className="hover:bg-green-400 cursor-pointer"
-            >
-              Load Product
-            </Button>
-          </form>
-          {productError && (
-            <p className="mt-2 text-destructive">
-              There was an error fetching the product.
-            </p>
-          )}
-        </CardContent>
-      </Card> */}
 
       {loading ? (
         <Fallback />

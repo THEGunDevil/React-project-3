@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { BanIcon, CheckCircle, Circle, Info, Trash2 } from "lucide-react";
+import { BanIcon, CheckCircle, Circle, Trash2 } from "lucide-react";
 import Spinner from "../Loader/Spinner";
 import { toast } from "react-toastify";
 import { DeleteConfirmPopUp } from "../DeleteConfirmPopUp";
@@ -23,18 +23,11 @@ import { useUtils } from "@/hooks/useUtils";
 import { useSupabaseQuery } from "@/hooks/useSupabaseQuery";
 import { UserOrdersTable } from "./UserOrdersTable";
 import { FaUser } from "react-icons/fa6";
-import { useForm } from "react-hook-form";
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
+
 import SearchBox from "./SearchBox";
 
 export default function AllUsersCard() {
-  // const {
-  //   register,
-  //   handleSubmit,
-  //   watch,
-  //   formState: { errors },
-  // } = useForm();
+
   const { CalculateLocalDate } = useUtils();
   const {
     data: users,
@@ -58,18 +51,9 @@ export default function AllUsersCard() {
     name: "",
     currentStatus: null,
   });
-  // const searchedEmailInput = watch("email");
   const [expandedUserId, setExpandedUserId] = useState(null);
   const [searchedUser, setSearchedUser] = useState(null);
 
-  // const FindUser = () => {
-  //   const found = users?.find((user) => user.email === searchedEmailInput);
-  //   if (found) {
-  //     setSearchedUser(found);
-  //   } else {
-  //     setSearchedUser(null);
-  //   }
-  // };
 
   const onViewOrders = (userId) => {
     setExpandedUserId((prev) => (prev === userId ? null : userId));
@@ -184,46 +168,9 @@ export default function AllUsersCard() {
         data={users}
         setSearchedData={setSearchedUser}
         loading={userLoading}
+        header="Search User"
+        label="User Email"
       />
-      {/* <Card>
-        <CardContent className="sm:w-xl max-w-xl mx-auto p-5">
-          <h2 className="text-2xl font-bold mb-4">User Search</h2>
-          <form
-            onSubmit={handleSubmit(FindUser)}
-            className="md:space-y-5 space-y-4"
-          >
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-primary text-lg">
-                User Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter user email"
-                {...register("email", { required: "Email is required" })}
-                className="w-full"
-              />
-              {errors.email && (
-                <p className="text-destructive text-[13px] mt-1">
-                  {errors.email.message}
-                </p>
-              )}
-              <p className="text-muted-foreground flex items-center gap-1 text-[13px] mt-1">
-                <Info size={13} />
-                NOTE: User email address is required to get the user
-                information.
-              </p>
-            </div>
-            <Button
-              type="submit"
-              disabled={!searchedEmailInput || userLoading}
-              className="hover:bg-green-400 cursor-pointer"
-            >
-              Search User
-            </Button>
-          </form>
-        </CardContent>
-      </Card> */}
       <Card>
         <Table>
           <TableCaption>

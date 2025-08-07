@@ -9,15 +9,14 @@ import { supabase } from "@/supabaseClient";
 import { toast } from "react-toastify";
 import Fallback from "./Loader/Fallback";
 import Spinner from "./Loader/Spinner";
-import { useNavigate } from "react-router-dom";
 import { useUtils } from "@/hooks/useUtils";
+import { FaCartArrowDown } from "react-icons/fa6";
 
 export default function Cart() {
   const { cartProducts, setCartProducts, removeFromCart } = useCart();
   const { user } = useContext(UserContext);
   const [isLoading, setIsLoading] = useState(false);
-  const {truncate,CalculateDiscount} = useUtils();
-  const navigate = useNavigate();
+  const { truncate, CalculateDiscount } = useUtils();
   const total = Array.isArray(cartProducts)
     ? cartProducts.reduce(
         (sum, item) =>
@@ -44,7 +43,7 @@ export default function Cart() {
       user_id: user.id,
       quantity: cartProducts.length,
       customer: `${user.userName}`,
-      customer_email:user.email,
+      customer_email: user.email,
       total_amount: parseFloat(total.toFixed(2)),
       payment_status: "Pending",
       delivery_status: "Pending",
@@ -116,7 +115,6 @@ export default function Cart() {
   };
 
   if (isLoading) return <Fallback />;
-  
 
   return (
     <section className="mt-14 md:mt-20 font-primary w-screen p-6">
@@ -126,10 +124,10 @@ export default function Cart() {
         </CardHeader>
         <CardContent className="space-y-4 h-80 md:h-130 overflow-scroll scrollbar-hide py-2">
           {!Array.isArray(cartProducts) || cartProducts.length === 0 ? (
-            <p className="text-center text-muted-foreground">
-              Your cart is empty.
-            </p>
-          ) : (
+              <div className="flex flex-col items-center h-full justify-center">
+                <FaCartArrowDown size={170} className="text-muted-foreground opacity-70"/>
+                <span className="text-muted-foreground text-lg">Your cart is empty.</span>
+              </div>       ) : (
             cartProducts.map((item) => (
               <div
                 key={item.id}

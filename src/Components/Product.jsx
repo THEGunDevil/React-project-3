@@ -16,8 +16,9 @@ import Fallback from "./Loader/Fallback";
 import { useCart } from "@/Contexts/CartContext";
 import { useSupabaseQuery } from "@/hooks/useSupabaseQuery";
 import { useUtils } from "@/hooks/useUtils";
+import { useEffect } from "react";
 export default function Product() {
-const {CalculateDiscount} = useUtils()
+  const { CalculateDiscount } = useUtils();
   const { productid } = useParams();
   // const { data, loading, error } = useAxios(
   //   `https://dummyjson.com/products/${productid}`
@@ -33,13 +34,15 @@ const {CalculateDiscount} = useUtils()
   //   return <p className="text-center mt-6 text-red-500">Product not found.</p>;
   // }
   const { addToCart } = useCart();
-  const { data, error, loading } = useSupabaseQuery({
+  const { data, error, loading, refetch } = useSupabaseQuery({
     table: "products",
     select: "*",
     filters: [{ column: "id", operator: "eq", value: productid }],
     single: true,
   });
-
+  useEffect(() => {
+    if (productid) refetch();
+  }, [productid]);
   if (loading) return <Fallback />;
   if (error) {
     console.error(error);

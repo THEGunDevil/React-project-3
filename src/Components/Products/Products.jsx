@@ -1,9 +1,6 @@
-
-import React from "react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -12,17 +9,20 @@ import { Button } from "../ui/button";
 import { useUtils } from "@/hooks/useUtils";
 import { useNavigate } from "react-router-dom";
 import { useSupabaseQuery } from "@/hooks/useSupabaseQuery";
+
 import Fallback from "../Loader/Fallback";
+import { useCart } from "@/Contexts/CartContext";
 function Products() {
-  const {truncate,CalculateDiscount} = useUtils();
+  const { truncate, CalculateDiscount } = useUtils();
   const navigate = useNavigate();
+  const { addToCart } = useCart();
   const {
     data: products,
     error,
     loading,
   } = useSupabaseQuery({
     table: "products",
-    select:"*",
+    select: "*",
   });
   if (loading) return <Fallback />;
   if (error) {
@@ -43,26 +43,22 @@ function Products() {
         {products?.map((product) => (
           <Card
             key={product.id}
-            onClick={(e) => {
-              e.stopPropagation();
+            onClick={() => {
               navigate(`/product/${product.id}`);
             }}
-            className="group w-full max-w-[400px] rounded-md p-1.5 sm:p-3 shadow-lg hover:-translate-y-2 duration-500 ease-in-out transition-transform"
+            className="w-full max-w-[400px] rounded-md p-1.5 sm:p-3 hover:-translate-y-1 shadow-none border duration-500 ease-in-out transition-transform"
           >
             <CardHeader className="p-1.5">
               <img
                 src={product.thumbnail}
                 alt={product.title}
-                className="rounded-md h-30 sm:h-65 w-full object-cover group-hover:scale-102 duration-500 ease-in-out transition-transform mix-blend-multiply"
+                className="rounded-md h-30 sm:h-65 w-full object-cover"
               />
             </CardHeader>
             <CardContent className="p-1.5 -mt-9 md:-mt-7">
-              <CardTitle className="text-md md:text-xl font-semibold leading-snug">
-                {product.title}
+              <CardTitle className="text-md md:text-xl font-semibold">
+                {truncate(product.title, 40)}
               </CardTitle>
-              <CardDescription className="text-[12px] md:text-sm text-gray-500 mt-0.5">
-                {truncate(product.description, 40)}
-              </CardDescription>
             </CardContent>
             <CardFooter className="flex flex-row items-center justify-between px-1.5">
               <span className="text-lg font-bold text-green-600">
@@ -70,12 +66,12 @@ function Products() {
               </span>
               <Button
                 onClick={(e) => {
+                  addToCart(product);
                   e.stopPropagation();
-                  navigate(`/product/${product.id}`);
                 }}
-                className="rounded-xl md:bg-green-500 md:hover:bg-green-400 cursor-pointer md:text-white bg-transparent text-green-500 md:shadow shadow-none text-[13px] sm:text-sm"
+                className="rounded-xl shadow-none sm:bg-green-500 sm:hover:bg-green-400 cursor-pointer md:text-white bg-transparent text-green-500 text-[13px] sm:text-sm"
               >
-                Quick View
+                Add to Cart
               </Button>
             </CardFooter>
           </Card>

@@ -1,4 +1,4 @@
-import React, { useContext, useState, useMemo } from "react";
+import React, { useContext, useState, useMemo, useEffect } from "react";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -9,7 +9,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LayoutDashboard, Menu } from "lucide-react";
-import { Link, NavLink } from "react-router-dom";
 import {
   FaHome,
   FaInfoCircle,
@@ -22,15 +21,15 @@ import {
 import { Input } from "../ui/input";
 import { DialogTitle } from "../ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-// import { supabase } from "@/supabaseClient";
 import LogoSvg from "@/Components/LogoSvg";
 import { UserContext } from "@/Contexts/UserContext";
 import Fallback from "../Loader/Fallback";
-
+import SearchPreview from "../SearchPreview";
+import { Link,NavLink } from "react-router-dom";
 export default function Header() {
   const [open, setOpen] = useState(false);
   const { user, loading } = useContext(UserContext);
-  
+  const [searchedValue, setSearchedValue] = useState("");
   const menuItems = useMemo(() => {
     const baseItems = [
       { title: "Home", path: "/", icon: FaHome },
@@ -59,39 +58,61 @@ export default function Header() {
   }, [user, loading]);
 
   return (
-    <nav className="bg-white font-primary w-full flex items-center fixed top-0 left-0 z-50 md:h-20 h-14" aria-label="Main navigation">
+    <nav
+      className="bg-white font-primary w-full flex items-center fixed top-0 left-0 z-50 md:h-20 h-14"
+      aria-label="Main navigation"
+    >
       <div className="items-center px-6 flex justify-between w-screen mx-auto md:flex py-3 md:py-5">
         <Link to="/" aria-label="Home page">
           <LogoSvg />
         </Link>
 
         {/* Search bar */}
-        <div className="w-[180px] md:w-[300px] h-[28px] md:h-[32px] px-2 border flex items-center">
-          <Input
-            type="search"
-            className="text-xs border-none px-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-            placeholder="Search site"
-            aria-label="Search"
-          />
-          <button
-            type="button"
-            className="text-xs border-l px-1 py-0.5 md:py-1 cursor-pointer bg-transparent"
-            aria-label="Submit search"
-          >
-            Search
-          </button>
+        <div className="relative">
+          <div className="w-[180px] md:w-[300px] h-[28px] md:h-[32px] px-2 border flex items-center">
+            <Input
+              type="search"
+              value={searchedValue.trim()}
+              className="text-xs border-none px-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              placeholder="Search products.."
+              aria-label="Search"
+              onChange={(e) => setSearchedValue(e.target.value)}
+            />
+            <button
+              type="button"
+              className="text-xs border-l px-1 py-0.5 sm:py-1 cursor-pointer bg-transparent"
+              aria-label="Submit search"
+            >
+              Search
+            </button>
+          </div>
+          {searchedValue?.trim() ? (
+            <div className="absolute left-1/2 top-16 -translate-x-1/2 bg-white md:w-3xl w-md border z-50">
+              <SearchPreview
+                query={searchedValue.trim()}
+                setQuery={setSearchedValue}
+              />
+            </div>
+          ) : null}
         </div>
 
         {/* Mobile Menu */}
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              aria-label="Open menu"
+            >
               <Menu />
             </Button>
           </SheetTrigger>
           <SheetContent side="left" aria-describedby="mobile-nav-description">
             <VisuallyHidden asChild>
-              <DialogTitle id="mobile-nav-description">Navigation Menu</DialogTitle>
+              <DialogTitle id="mobile-nav-description">
+                Navigation Menu
+              </DialogTitle>
             </VisuallyHidden>
             <nav className="flex flex-col gap-2 py-15">
               {loading ? (

@@ -8,6 +8,8 @@ import { useForm } from "react-hook-form";
 import { useSupabaseQuery } from "@/hooks/useSupabaseQuery";
 function SearchBox({
   inputType,
+  label,
+  header,
   searchedTo = "Find",
   fetchFrom,
   singleFetch,
@@ -69,24 +71,24 @@ function SearchBox({
   const onSubmit = () => {
     if (searchedTo === "Find") {
       Find();
-    } else Fetch();
+    } else Fetch();    
   };
   return (
     <Card>
       <CardContent className="sm:w-xl max-w-xl mx-auto p-5">
-        <h2 className="text-2xl font-bold mb-4">User Search</h2>
+        <h2 className="text-2xl font-bold mb-4">{header}</h2>
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="md:space-y-5 space-y-4"
         >
           <div className="space-y-2">
             <Label htmlFor="text" className="text-primary text-lg">
-              User Email
+{label}
             </Label>
             <Input
               id="text"
               type={inputType}
-              placeholder="Enter user data to search"
+              placeholder={`Enter user ${inputType} to search`}
               {...register(inputType, {
                 required: `${inputType} is required`,
               })}
@@ -100,7 +102,7 @@ function SearchBox({
 
             <p className="text-muted-foreground flex items-center gap-1 text-[13px] mt-1">
               <Info size={13} />
-              NOTE: User {inputType} address is required to get the user
+              NOTE: {fetchFrom === "orders" ? "Order" : fetchFrom ==="products" ? "Product" : fetchFrom === "users" ? "User" : ""} {inputType} is required to get the user
               information.
             </p>
           </div>

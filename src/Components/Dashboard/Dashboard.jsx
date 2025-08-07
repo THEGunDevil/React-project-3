@@ -85,7 +85,7 @@ export default function Dashboard() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview">
+        <TabsContent value="overview" className="flex flex-col">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardContent className="flex items-center gap-4 py-6">
@@ -129,7 +129,10 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </div>
-          <div></div>
+          {/* <section>
+            <Card></Card>
+            <Card></Card>
+          </section> */}
         </TabsContent>
 
         <TabsContent value="users">
@@ -183,11 +186,7 @@ export default function Dashboard() {
             </TabsContent>
 
             <TabsContent value="updateproduct">
-              <Card>
-                <CardContent className="p-6">
-                  <UpdateProduct />
-                </CardContent>
-              </Card>
+              <UpdateProduct />
             </TabsContent>
           </Tabs>
         </TabsContent>

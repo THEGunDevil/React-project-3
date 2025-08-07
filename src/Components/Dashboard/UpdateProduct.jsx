@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import Spinner from "../Loader/Spinner";
-import { Info } from "lucide-react";
 import { supabase } from "@/supabaseClient";
-import { useFetchSnglPrdct } from "@/hooks/useFetchSnglPrdct";
+import Fallback from "../Loader/Fallback";
+import SearchBox from "./SearchBox";
+import { Card } from "../ui/card";
 
 export default function UpdateProduct() {
   const {
@@ -16,53 +17,53 @@ export default function UpdateProduct() {
     formState: { errors, isDirty },
     reset,
     watch,
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      title: "",
+      description: "",
+      price: "",
+      discount: "",
+      stock: "",
+      brand: "",
+      category: "",
+    },
+  });
 
   const [isLoading, setIsLoading] = useState(false);
   const [imagesPreview, setImagesPreview] = useState([]);
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
-  const [existingProduct, setExistingProduct] = useState(null);
   const [productIdToUpdate, setProductIdToUpdate] = useState(null);
-
+  const [productState, setProductState] = useState({
+    loading: false,
+    error: null,
+  });
+  const [existingProductData, setExistingProductData] = useState(null);
   const thumbnailFiles = watch("thumbnail");
   const imageFiles = watch("images");
-  const productId = watch("id");
 
-  const {
-    product: existingProductData,
-    error: existingProductError,
-    isLoading: existingProductLoading,
-  } = useFetchSnglPrdct(productId);
-
-  const onIdSubmit = () => {
-    if (!productId) {
-      toast.error("Please enter a Product ID to load.", {
-        position: "bottom-center",
+  useEffect(() => {
+    if (existingProductData) {
+      const p = existingProductData;
+      reset({
+        title: p.title || "",
+        description: p.description || "",
+        price: p.price || "",
+        discount: p.discount || "",
+        stock: p.stock || "",
+        brand: p.brand || "",
+        category: p.category || "",
       });
-      return;
+      setProductIdToUpdate(p.id);
+      setThumbnailPreview(p.thumbnail || null);
+      setImagesPreview(p.images || []);
     }
+  }, [existingProductData, reset]); // ✅ watches actual productData
 
-    if (existingProductLoading) return;
-
-    if (existingProductError || !existingProductData) {
+  useEffect(() => {
+    if (productState.error) {
       toast.error("Product not found.", { position: "bottom-center" });
-      return;
     }
-
-    setExistingProduct(existingProductData);
-    setProductIdToUpdate(productId);
-    reset({
-      title: existingProductData.title || "",
-      description: existingProductData.description || "",
-      price: existingProductData.price || "",
-      discount: existingProductData.discount || "",
-      stock: existingProductData.stock || "",
-      brand: existingProductData.brand || "",
-      category: existingProductData.category || "",
-    });
-    setThumbnailPreview(existingProductData.thumbnail);
-    setImagesPreview(existingProductData.images || []);
-  };
+  }, [productState.error]);
 
   useEffect(() => {
     if (thumbnailFiles && thumbnailFiles[0]) {
@@ -73,11 +74,11 @@ export default function UpdateProduct() {
   }, [thumbnailFiles]);
 
   useEffect(() => {
-    if (imageFiles) {
+    if (imageFiles && imageFiles.length > 0) {
       const arr = Array.from(imageFiles);
       const urls = arr.map((f) => URL.createObjectURL(f));
       setImagesPreview(urls);
-      return () => urls.forEach(URL.revokeObjectURL);
+      return () => urls.forEach((url) => URL.revokeObjectURL(url));
     }
   }, [imageFiles]);
 
@@ -85,6 +86,7 @@ export default function UpdateProduct() {
     const {
       data: { session },
     } = await supabase.auth.getSession();
+
     if (!session) {
       toast.error("You must be signed in.", { position: "bottom-center" });
       return;
@@ -113,8 +115,10 @@ export default function UpdateProduct() {
       toast.success("Product updated successfully!", {
         position: "top-center",
       });
+
       reset();
-      setExistingProduct(null);
+      setProductIdToUpdate(null);
+      setProductState({ data: null, loading: false, error: null });
       setThumbnailPreview(null);
       setImagesPreview([]);
     } catch (err) {
@@ -127,187 +131,171 @@ export default function UpdateProduct() {
 
   return (
     <>
-      <section className="relative max-w-xl mx-auto">
-        <h2 className="text-2xl font-bold mb-4">Update Product</h2>
-        {!existingProduct && (
-          <form
-            onSubmit={handleSubmit(onIdSubmit)}
-            className="md:space-y-5 space-y-4"
-          >
-            <div className="space-y-2">
-              <Label htmlFor="id" className="text-primary text-lg">
-                Product Id
-              </Label>
-              <Input
-                id="id"
-                type="text"
-                placeholder="Enter Product ID"
-                {...register("id")}
-              />
-              {errors.id && (
-                <p className="text-destructive text-[13px] mt-1">
-                  {errors.id.message}
-                </p>
-              )}
-              <p className="text-muted-foreground flex items-center gap-1 text-[13px] mt-1">
-                <Info size={13} />
-                NOTE: Product id is needed to upgrade the product information.
-              </p>
-            </div>
-            <Button type="submit" disabled={isLoading || !productId} className="hover:bg-green-400 cursor-pointer">
-              Load Product
-            </Button>
-          </form>
-        )}{" "}
-        {existingProduct && (
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="md:space-y-7 space-y-4 "
-          >
-            <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                type="text"
-                placeholder="Product title"
-                {...register("title")}
-              />
-              {errors.title && (
-                <p className="text-destructive text-sm mt-1">
-                  {errors.title.message}
-                </p>
-              )}
-            </div>
+      <SearchBox
+        inputType="id"
+        label="Product Id"
+        header="Update Product"
+        fetchFrom="products"
+        singleFetch={true}
+        column="id"
+        operator="eq"
+        searchedTo="Fetch"
+        setSearchedData={setExistingProductData}
+        setLoading={setIsLoading}
+        loading={productState.loading}
+      />
 
-            {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <textarea
-                id="description"
-                placeholder="Product description"
-                {...register("description")}
-                className="w-full border rounded p-2"
-              />
-              {errors.description && (
-                <p className="text-destructive text-sm mt-1">
-                  {errors.description.message}
-                </p>
-              )}
-            </div>
-
-            {/* Price, Discount, Stock */}
-            <div className="grid grid-cols-3 gap-4">
-              {[
-                { name: "price", label: "Price", type: "number" },
-                { name: "discount", label: "Discount %", type: "number" },
-                { name: "stock", label: "Stock", type: "number" },
-              ].map((field) => (
-                <div className="space-y-2" key={field.name}>
-                  <Label htmlFor={field.name}>{field.label}</Label>
-                  <Input
-                    id={field.name}
-                    type={field.type}
-                    placeholder={`Product ${field.label.toLowerCase()}`}
-                    {...register(field.name)}
-                  />
-                  {errors[field.name] && (
-                    <p className="text-destructive text-sm mt-1">
-                      {errors[field.name].message}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Brand & Category */}
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { name: "brand", label: "Brand", type: "text" },
-                {
-                  name: "category",
-                  label: "Category",
-                  type: "text",
-                },
-              ].map((field) => (
-                <div className="space-y-2" key={field.name}>
-                  <Label htmlFor={field.name}>{field.label}</Label>
-                  <Input
-                    id={field.name}
-                    type={field.type}
-                    placeholder={`Product ${field.label.toLowerCase()}`}
-                    {...register(field.name)}
-                  />
-                  {errors[field.name] && (
-                    <p className="text-destructive text-sm mt-1">
-                      {errors[field.name].message}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Thumbnail Upload & Preview */}
-            <div className="space-y-2">
-              <Label htmlFor="thumbnail">Thumbnail</Label>
-              <Input
-                id="thumbnail"
-                type="file"
-                accept="image/*"
-                {...register("thumbnail")}
-              />
-              {errors.thumbnail && (
-                <p className="text-destructive text-sm mt-1">
-                  {errors.thumbnail.message}
-                </p>
-              )}
-              {thumbnailPreview && (
-                <img
-                  src={thumbnailPreview}
-                  alt="thumb-preview"
-                  className="h-16 w-16 object-cover rounded"
-                />
-              )}
-            </div>
-
-            {/* Images Upload & Preview */}
-            <div className="space-y-2">
-              <Label htmlFor="images">Images</Label>
-              <Input
-                id="images"
-                type="file"
-                accept="image/*"
-                multiple
-                {...register("images")}
-              />
-              {imagesPreview.length > 0 && (
-                <div className="flex gap-2 flex-wrap">
-                  {imagesPreview.map((src, idx) => (
-                    <img
-                      key={idx}
-                      src={src}
-                      alt={`preview-${idx}`}
-                      className="h-16 w-16 object-cover rounded"
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-            <Button
-              type="submit"
-              disabled={!isDirty || isLoading}
-              className="px-4 py-2 text-white rounded hover:bg-green-400"
+      {productState.loading ? (
+        <Fallback />
+      ) : (
+        existingProductData && (
+          <Card>
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="md:space-y-7 space-y-4 py-6 mx-auto"
             >
-              {isLoading ? (
-                <span className="flex items-center">
-                  <Spinner /> Updating Product...
-                </span>
-              ) : (
-                "Update Product"
-              )}
-            </Button>
-          </form>
-        )}
-      </section>
+              <div className="space-y-2">
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  type="text"
+                  {...register("title", { required: "Title is required" })}
+                />
+                {errors.title && (
+                  <p className="text-destructive text-sm mt-1">
+                    {errors.title.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <textarea
+                  id="description"
+                  {...register("description", {
+                    required: "Description is required",
+                  })}
+                  className="w-full border rounded p-2"
+                />
+                {errors.description && (
+                  <p className="text-destructive text-sm mt-1">
+                    {errors.description.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                {["price", "discount", "stock"].map((field) => (
+                  <div key={field} className="space-y-2">
+                    <Label htmlFor={field}>
+                      {field.charAt(0).toUpperCase() + field.slice(1)}
+                    </Label>
+                    <Input
+                      id={field}
+                      type="number"
+                      {...register(field, {
+                        required: `${field} is required`,
+                        valueAsNumber: true,
+                        min: {
+                          value: 0,
+                          message: `${field} cannot be negative`,
+                        },
+                        ...(field === "discount" && {
+                          max: {
+                            value: 100,
+                            message: "Discount cannot exceed 100%",
+                          },
+                        }),
+                      })}
+                    />
+                    {errors[field] && (
+                      <p className="text-destructive text-sm mt-1">
+                        {errors[field].message}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                {["brand", "category"].map((field) => (
+                  <div key={field} className="space-y-2">
+                    <Label htmlFor={field}>
+                      {field.charAt(0).toUpperCase() + field.slice(1)}
+                    </Label>
+                    <Input
+                      id={field}
+                      type="text"
+                      {...register(field, {
+                        required: `${field} is required`,
+                      })}
+                    />
+                    {errors[field] && (
+                      <p className="text-destructive text-sm mt-1">
+                        {errors[field].message}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="thumbnail">Thumbnail</Label>
+                <Input
+                  id="thumbnail"
+                  type="file"
+                  accept="image/*"
+                  {...register("thumbnail")}
+                />
+                {thumbnailPreview && (
+                  <img
+                    src={thumbnailPreview}
+                    alt="Thumbnail Preview"
+                    className="h-16 w-16 object-cover rounded"
+                  />
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="images">Images</Label>
+                <Input
+                  id="images"
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  {...register("images")}
+                />
+                {imagesPreview.length > 0 && (
+                  <div className="flex gap-2 flex-wrap">
+                    {imagesPreview.map((src, idx) => (
+                      <img
+                        key={idx}
+                        src={src}
+                        alt={`Preview ${idx}`}
+                        className="h-16 w-16 object-cover rounded"
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                disabled={!isDirty || isLoading}
+                className="px-4 py-2 text-white rounded hover:bg-green-400"
+              >
+                {isLoading ? (
+                  <span className="flex items-center">
+                    <Spinner /> Updating Product...
+                  </span>
+                ) : (
+                  "Update Product"
+                )}
+              </Button>
+            </form>
+          </Card>
+        )
+      )}
     </>
   );
 }
