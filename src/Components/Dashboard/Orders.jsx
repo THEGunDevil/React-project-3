@@ -17,10 +17,20 @@ import SearchBox from "./SearchBox";
 import { FilterButton } from "../FilterButton";
 import RefreshButton from "../RefreshButton";
 import SortingButton from "../SortingButton";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "../ui/pagination";
 const Orders = () => {
   const { truncate, CalculateLocalDate } = useUtils();
   const [searchedOrders, setSearchedOrders] = useState(null);
   const [sortingDirection, setSortingDirection] = useState(true);
+
   const handleSorting = (direction) => {
     setSortingDirection(direction);
   };
@@ -44,7 +54,15 @@ const Orders = () => {
   useEffect(() => {
     refetch();
   }, [sortingDirection]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10; // number of orders per page
+  const displayedOrders = (searchedOrders ?? orders) || [];
+  const totalPages = Math.ceil(displayedOrders.length / pageSize);
 
+  const paginatedOrders = displayedOrders.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
   return (
     <section className="space-y-4">
       <SearchBox
@@ -82,7 +100,7 @@ const Orders = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(searchedOrders ?? orders)?.map((order) => (
+              {paginatedOrders.map((order) => (
                 <TableRow key={order.id} className="text-center">
                   <TableCell>{truncate(order.id, 8)}</TableCell>
                   <TableCell>{CalculateLocalDate(order.created_at)}</TableCell>
@@ -116,6 +134,35 @@ const Orders = () => {
             </TableBody>
           </Table>
         )}
+        {/* Pagination controls */}
+        <Pagination
+          aria-label="Pagination Navigation"
+          className="flex justify-center w-full"
+        >
+          <PaginationPrevious
+            className="cursor-default"
+            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </PaginationPrevious>
+
+          {[...Array(totalPages)].map((_, i) => (
+            <PaginationItem className="cursor-default" key={i} active={currentPage === i + 1}>
+              <PaginationLink onClick={() => setCurrentPage(i + 1)}>
+                {i + 1}
+              </PaginationLink>
+            </PaginationItem>
+          ))}
+
+          <PaginationNext
+            className="cursor-default"
+            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </PaginationNext>
+        </Pagination>
       </Card>
     </section>
   );
